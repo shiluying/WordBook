@@ -27,9 +27,6 @@ public class LeftRecyclerViewAdapter extends RecyclerView.Adapter<LeftRecyclerVi
         mValues = items;
         mListener = listener;
     }
-    public void change(){
-
-    }
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
