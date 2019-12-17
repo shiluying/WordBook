@@ -52,7 +52,7 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_land);
         db=new DBHelper(this).getWritableDatabase();
         sqlHelper  = new SQLHelper();
 
@@ -62,9 +62,9 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
         mHandler=new Handler(getMainLooper());
 
         setLayout();
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//
+//        Toolbar toolbar = findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
 
         FloatingActionButton add = findViewById(R.id.add);
         add.setOnClickListener(new View.OnClickListener() {
@@ -81,6 +81,29 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
                 EditText edittext = (EditText) findViewById(R.id.search_edit_text);
                 fuzzyword = edittext.getText().toString();
                 setLayout();
+            }
+        });
+
+        final Button changeList = findViewById(R.id.changeList);
+        changeList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String listType=changeList.getText().toString();
+                if("生词本".equals(listType)){
+                    ListFragment listFragment = new ListFragment();
+                    transaction = fragmentManager.beginTransaction();//开启一个事务
+                    transaction.replace(R.id.wordslist, listFragment);//添加fragment
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                    changeList.setText("单词列表");
+                }else{
+                    leftfragment = new LeftFragment();
+                    transaction = fragmentManager.beginTransaction();//开启一个事务
+                    transaction.replace(R.id.wordslist, leftfragment);//添加fragment
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                    changeList.setText("生词本");
+                }
             }
         });
     }
@@ -132,7 +155,7 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
         rightfragment = new RightFragment();
         rightfragment.setArguments(arguments);
         transaction = fragmentManager.beginTransaction();//开启一个事务
-        transaction.replace(R.id.content_main, rightfragment);//添加一个fragment
+        transaction.replace(R.id.worddetail, rightfragment);//添加一个fragment
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -142,10 +165,10 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
         super.onConfigurationChanged(newConfig);
         if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
             Toast.makeText(getApplicationContext(), "横屏x", Toast.LENGTH_SHORT).show();
+            MainLandActivity.showActivity(this);
+            finish();
         }else{
             Toast.makeText(getApplicationContext(), "竖屏x", Toast.LENGTH_SHORT).show();
-            MainActivity.showActivity(this);
-            finish();
         }
     }
 
@@ -157,7 +180,7 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
         leftfragment = new LeftFragment();
         leftfragment.setArguments(arguments);
         transaction = fragmentManager.beginTransaction();//开启一个事务
-        transaction.replace(R.id.content_main, leftfragment);//添加fragment
+        transaction.replace(R.id.wordslist, leftfragment);//添加fragment
         transaction.addToBackStack(null);
         transaction.commit();
     }
@@ -200,12 +223,11 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
                         String errorCode = map.get("errorCode").toString();
                         if("0".equals(errorCode)){
                             wordphonetic = map.get("phonetic").toString();
-                            wordmeaning=map.get("explains").toString();
-                            wordmeaning=wordmeaning.substring(0,-1);
+                            wordmeaning=map.get("explains").toString();;
                         }else{
                             Log.i("ADD","fail to add.");
                         }
-                        sqlHelper.insertData(db,word,wordmeaning,wordphonetic,wordsample,"false");
+                        sqlHelper.insertData(db,word,wordphonetic,wordmeaning,wordsample,"false");
                         word="";
                         wordmeaning="";
                         wordsample="";

@@ -18,7 +18,9 @@
 ![hadoop](https://github.com/shiluying/WordBook/raw/master/screenshot/3.PNG?raw=true)
 ### 删除单词（and）
 ![hadoop](https://github.com/shiluying/WordBook/raw/master/screenshot/11.PNG?raw=true)
-
+### 横屏
+![hadoop](https://github.com/shiluying/WordBook/raw/master/screenshot/13.PNG?raw=true)
+![hadoop](https://github.com/shiluying/WordBook/raw/master/screenshot/14.PNG?raw=true)
 ## WordBook+News
 ### 新闻列表
 ![hadoop](https://github.com/shiluying/WordBook/raw/master/screenshot/10.PNG?raw=true)
