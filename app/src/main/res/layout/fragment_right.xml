@@ -11,21 +11,34 @@
         android:orientation="vertical"
         android:layout_gravity="left|top">
 
-        <TextView
+         <TextView
+            android:textSize="25sp"
             android:id="@+id/word"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <TextView
+         <TextView
+            android:textSize="25sp"
             android:id="@+id/wordmeaning"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+         <TextView
+            android:textSize="25sp"
+            android:id="@+id/wordphonetic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
-        <TextView
+         <TextView
+            android:textSize="25sp"
             android:id="@+id/wordsample"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+         <TextView
+            android:textSize="25sp"
+            android:id="@+id/wordtype"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
         <Button
             android:id="@+id/delbutton"
             android:layout_width="wrap_content"
@@ -37,6 +50,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="CHANGE"/>
+
+        <Button
+            android:id="@+id/typebutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ADD TO LIST"/>
 
     </LinearLayout>
 

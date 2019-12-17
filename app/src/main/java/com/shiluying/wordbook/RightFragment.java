@@ -18,21 +18,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.shiluying.wordbook.Word.WordContent;
 import com.shiluying.wordbook.database.DBHelper;
 import com.shiluying.wordbook.database.SQLHelper;
 import com.shiluying.wordbook.enity.Record;
 
 import java.util.ArrayList;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link RightFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link RightFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class RightFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -43,6 +35,8 @@ public class RightFragment extends Fragment {
     private SQLHelper sqlHelper;
     private OnFragmentInteractionListener mListener;
     private ArrayList<Record> recordList = new ArrayList<Record>();
+    TextView textViewType,textViewWord;
+    Button typebutton;
     View view;
     public RightFragment() {
         // Required empty public constructor
@@ -83,32 +77,34 @@ public class RightFragment extends Fragment {
 
         Log.i("TEST","onCreateView");
         view= inflater.inflate(R.layout.fragment_right, container, false);
+        typebutton=(Button)view.findViewById(R.id.typebutton);
+        textViewType=(TextView)view.findViewById(R.id.wordtype);
         refreshData();
         return view;
     }
     public void refreshData(){
         recordList=sqlHelper.queryData(db,mParam1);
-        TextView textViewWord=(TextView)view.findViewById(R.id.word);
+        textViewWord=(TextView)view.findViewById(R.id.word);
         TextView textViewMeaning=(TextView)view.findViewById(R.id.wordmeaning);
+        TextView textViewPhonetic=(TextView)view.findViewById(R.id.wordphonetic);
         TextView textViewSample=(TextView)view.findViewById(R.id.wordsample);
+
         for(int i=0;i<recordList.size();i++){
             textViewWord.setText(recordList.get(i).getWord());
             textViewMeaning.setText(recordList.get(i).getWordMeaning());
+            textViewPhonetic.setText(recordList.get(i).getWordphonetic());
             textViewSample.setText(recordList.get(i).getWordSample());
+            textViewType.setText(recordList.get(i).getWordtype());
+            if("true".equals(recordList.get(i).getWordtype())){
+                typebutton.setText("REMOVE FROM LIST");
+            }else {
+                typebutton.setText("ADD TO LIST");
+            }
     }
 }
-    // TODO: Rename method, update argument and hook method into UI event
-//    public void onButtonPressed(Uri uri) {
-
-//        Log.i("TEST","onButtonPressed");
-//        if (mListener != null) {
-//            mListener.onFragmentInteraction(uri);
-//        }
-//    }
 
     @Override
     public void onAttach(Context context) {
-        Log.i("TEST","onAttach");
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
@@ -116,18 +112,15 @@ public class RightFragment extends Fragment {
     }
     @Override
     public void onResume() {
-        Log.i("TEST","onResume");
         super.onResume();
     }
     @Override
     public void onDetach() {
-        Log.i("TEST","onDetach");
         super.onDetach();
         mListener = null;
     }
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Log.i("TEST","onActivityCreated");
         super.onActivityCreated(savedInstanceState);
         Button delbutton = (Button)getActivity().findViewById(R.id.delbutton);
         delbutton.setOnClickListener(new View.OnClickListener() {
@@ -144,6 +137,25 @@ public class RightFragment extends Fragment {
                 changeWord();
             }
         });
+        typebutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String type=textViewType.getText().toString();
+                String word = textViewWord.getText().toString();
+                sqlHelper.updateDataType(db,word,type);
+                if("false".equals(type)){
+                    typebutton.setText("REMOVE FROM LIST");
+                    textViewType.setText("true");
+                    sqlHelper.updateDataType(db,word,"true");
+                }else {
+                    textViewType.setText("false");
+                    typebutton.setText("ADD TO LIST");
+                    sqlHelper.updateDataType(db,word,"false");
+                }
+
+//                refreshData();
+            }
+        });
     }
     public void changeWord(){
         final View layout = View.inflate(getActivity(), R.layout.word_add,
@@ -156,7 +168,8 @@ public class RightFragment extends Fragment {
             edittext.setText(record.getWord());
             edittext = (EditText) layout.findViewById(R.id.addmeaning);
             edittext.setText(record.getWordMeaning());
-            String meaning = edittext.getText().toString();
+            edittext = (EditText) layout.findViewById(R.id.addphonetic);
+            edittext.setText(record.getWordphonetic());
             edittext = (EditText) layout.findViewById(R.id.addsample);
             edittext.setText(record.getWordSample());
         }
@@ -172,9 +185,11 @@ public class RightFragment extends Fragment {
                         mParam1=word;
                         edittext = (EditText) layout.findViewById(R.id.addmeaning);
                         String meaning = edittext.getText().toString();
+                        edittext = (EditText) layout.findViewById(R.id.addphonetic);
+                        String phonetic = edittext.getText().toString();
                         edittext = (EditText) layout.findViewById(R.id.addsample);
                         String sample = edittext.getText().toString();
-                        sqlHelper.updateData(db,word,meaning,sample);
+                        sqlHelper.updateData(db,word,meaning,phonetic,sample);
                         refreshData();
                         Configuration configuration = getResources().getConfiguration();
                         if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {//横屏
@@ -186,16 +201,6 @@ public class RightFragment extends Fragment {
                 });
         builder.create().show();
     }
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onRightFragmentInteraction();

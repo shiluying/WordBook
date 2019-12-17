@@ -9,7 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+import com.shiluying.wordbook.Server.TranslateServer;
 import com.shiluying.wordbook.Word.WordContent;
 
 import androidx.appcompat.app.AlertDialog;
@@ -17,8 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.fragment.app.ListFragment;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
@@ -26,11 +26,12 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.shiluying.wordbook.database.*;
-import com.shiluying.wordbook.enity.Record;
+import com.shiluying.wordbook.http.HttpUtilsSafe;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements LeftFragment.OnListFragmentInteractionListener,RightFragment.OnFragmentInteractionListener {
     private AlertDialog.Builder builder;
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
     private RightFragment rightfragment;
     private FragmentTransaction transaction;
     FragmentManager fragmentManager;
+    Handler mHandler;
+    String word="",wordmeaning="",wordsample="",wordphonetic="";
     public static void showActivity(Activity activity){
         Intent intent = new Intent(activity, MainActivity.class);
         activity.startActivity(intent);
@@ -56,7 +59,8 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
         fragmentManager = getSupportFragmentManager();//fragment管理器
         leftfragment=new LeftFragment();
         rightfragment = new RightFragment();
-        Configuration configuration = getResources().getConfiguration();
+        mHandler=new Handler(getMainLooper());
+
         setLayout();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -79,6 +83,29 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
                 setLayout();
             }
         });
+
+        final Button changeList = findViewById(R.id.changeList);
+        changeList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String listType=changeList.getText().toString();
+                if("生词本".equals(listType)){
+                    ListFragment listFragment = new ListFragment();
+                    transaction = fragmentManager.beginTransaction();//开启一个事务
+                    transaction.replace(R.id.content_main, listFragment);//添加fragment
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                    changeList.setText("单词列表");
+                }else{
+                    leftfragment = new LeftFragment();
+                    transaction = fragmentManager.beginTransaction();//开启一个事务
+                    transaction.replace(R.id.content_main, leftfragment);//添加fragment
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                    changeList.setText("生词本");
+                }
+            }
+        });
     }
 
     @Override
@@ -90,17 +117,27 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        Intent intent;
+        switch (item.getItemId()){
+            case R.id.wordbook:
+                intent=new Intent(MainActivity.this,MainActivity.class);
+                break;
+            case R.id.news:
+                intent=new Intent(MainActivity.this,NewsActivity.class);
+                startActivity(intent);
+                break;
+            default:
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
         }
-
-        return super.onOptionsItemSelected(item);
+        return true;
+//        int id = item.getItemId();
+//
+//        //noinspection SimplifiableIfStatement
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+//
+//        return super.onOptionsItemSelected(item);
     }
     @Override
     public void onResume(){
@@ -148,6 +185,7 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
         transaction.commit();
     }
     private void showInput() {
+
         final View layout = View.inflate(this, R.layout.word_add,
                 null);
         builder = new AlertDialog.Builder(this)
@@ -158,22 +196,54 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
                     public void onClick(DialogInterface dialogInterface, int i) {
                         EditText edittext;
                         edittext = (EditText) layout.findViewById(R.id.addword);
-                        String word = edittext.getText().toString();
-                        edittext = (EditText) layout.findViewById(R.id.addmeaning);
-                        String meaning = edittext.getText().toString();
+                        word = edittext.getText().toString();
                         edittext = (EditText) layout.findViewById(R.id.addsample);
-                        String sample = edittext.getText().toString();
-                        sqlHelper.insertData(db,word,meaning,sample);
-                        Configuration configuration = getResources().getConfiguration();
-                        setLayout();
+                        wordsample = edittext.getText().toString();
+                        getWordData();
                     }
                 });
         builder.create().show();
     }
-
+    public void getWordData(){
+        final TranslateServer translateServer = new TranslateServer();
+        String url=translateServer.getURL(word);
+        HttpUtilsSafe.getInstance().get(this,"youdao",url, new HttpUtilsSafe.OnRequestCallBack() {
+            @Override
+            public void onSuccess(final String text) {//text为返回数据
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i("TRANSLATE",text);
+                        Map<String,Object> map = null;
+                        try {
+                            map = translateServer.getData(text);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        String errorCode = map.get("errorCode").toString();
+                        if("0".equals(errorCode)){
+                            wordphonetic = map.get("phonetic").toString();
+                            wordmeaning=map.get("explains").toString();;
+                        }else{
+                            Log.i("ADD","fail to add.");
+                        }
+                        sqlHelper.insertData(db,word,wordphonetic,wordmeaning,wordsample,"false");
+                        word="";
+                        wordmeaning="";
+                        wordsample="";
+                        wordphonetic="";
+                        setLayout();
+                    }
+                });
+            }
+            @Override
+            public void onFail(Exception e) {
+                Log.e("TEST", "onFail: "+e.getMessage() );
+            }
+        });
+    }
     @Override
     public void onRightFragmentInteraction() {
-        Configuration configuration = getResources().getConfiguration();
         setLayout();
     }
 

@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">WordBook</string>
+    <string name="menu_word">wordbook</string>
+    <string name="menu_news">news</string>
     <string name="action_settings">Settings</string>
 
     <!-- TODO: Remove or change this placeholder text -->

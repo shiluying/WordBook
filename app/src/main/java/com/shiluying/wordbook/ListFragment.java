@@ -19,8 +19,6 @@ import com.shiluying.wordbook.database.SQLHelper;
 import com.shiluying.wordbook.enity.Record;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * A fragment representing a list of Items.
@@ -28,25 +26,22 @@ import java.util.Comparator;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class LeftFragment extends Fragment {
+public class ListFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
     // TODO: Customize parameters
-    private static final String ARG_PARAM1 = "word";
     private String mParam1="";
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     private WordContent.WordItem item;
-    private LeftRecyclerViewAdapter mAdapter = null;
+    private ListRecyclerViewAdapter mAdapter = null;
     ArrayList<WordItem> wordList=new ArrayList<WordItem>();
 
 
-    public static LeftFragment newInstance(int columnCount) {
-        LeftFragment fragment = new LeftFragment();
+    public static ListFragment newInstance(int columnCount) {
+        ListFragment fragment = new ListFragment();
         Bundle args = new Bundle();
-//        args.putInt(ARG_COLUMN_COUNT, columnCount);
-//        fragment.setArguments(args);
         return fragment;
     }
     @Override
@@ -56,19 +51,9 @@ public class LeftFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-        }
+        RefreshData();
 
     }
-    Comparator<WordItem> comparator = new Comparator<WordItem>(){
-        public int compare(WordItem s1, WordItem s2) {
-            if(!s1.word.equals(s2.word)){
-                return s1.word.compareTo(s2.word);
-            }
-            return 0;
-        }
-    };
     public void RefreshData(){
         wordList=new ArrayList<WordItem>();
         SQLiteDatabase db = new DBHelper(getActivity()).getWritableDatabase();
@@ -80,12 +65,15 @@ public class LeftFragment extends Fragment {
             recordList=sqlHelper.queryData(db,"");
         }
         for(int i=0;i<recordList.size();i++){
-            WordItem word = new WordItem(recordList.get(i).getWord());
-            wordList.add(word);
-        }
-        Collections.sort(wordList,comparator);
-    }
+            if("true".equals(recordList.get(i).getWordtype())){
+                WordItem word = new WordItem(recordList.get(i).getWord(),recordList.get(i).getWordMeaning());
+                wordList.add(word);
+            }else{
+                Log.i("WORD","it is not word");
+            }
 
+        }
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -93,7 +81,7 @@ public class LeftFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_left_list, container, false);
         if (view instanceof RecyclerView) {
             RecyclerView recyclerView = (RecyclerView) view;
-            mAdapter=new LeftRecyclerViewAdapter(wordList, mListener);
+            mAdapter=new ListRecyclerViewAdapter(wordList, mListener);
             recyclerView.setAdapter(mAdapter);
         }
         return view;
