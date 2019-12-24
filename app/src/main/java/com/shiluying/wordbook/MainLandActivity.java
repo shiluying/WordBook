@@ -165,10 +165,10 @@ public class MainLandActivity extends AppCompatActivity implements LeftFragment.
         super.onConfigurationChanged(newConfig);
         if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
             Toast.makeText(getApplicationContext(), "横屏x", Toast.LENGTH_SHORT).show();
-            MainLandActivity.showActivity(this);
-            finish();
         }else{
             Toast.makeText(getApplicationContext(), "竖屏x", Toast.LENGTH_SHORT).show();
+            MainActivity.showActivity(this);
+            finish();
         }
     }
 

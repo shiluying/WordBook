@@ -134,6 +134,10 @@ public class NewsActivity extends AppCompatActivity implements NewsListFragment.
             });
         }
     }
+    @Override
+    public void onResume(){
+        super.onResume();
+    }
     public void getTranslate(String word){
         final TranslateServer translateServer = new TranslateServer();
         String url=translateServer.getURL(word);
@@ -198,6 +202,7 @@ public class NewsActivity extends AppCompatActivity implements NewsListFragment.
             case R.id.wordbook:
                 intent=new Intent(NewsActivity.this,MainActivity.class);
                 startActivity(intent);
+                finish();
                 break;
             case R.id.news:
                 intent=new Intent(NewsActivity.this,NewsActivity.class);

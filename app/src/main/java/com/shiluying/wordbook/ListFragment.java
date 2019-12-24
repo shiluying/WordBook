@@ -1,6 +1,7 @@
 package com.shiluying.wordbook;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
@@ -12,10 +13,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.shiluying.wordbook.ContentProvider.DatabaseProvider;
 import com.shiluying.wordbook.Word.WordContent;
 import com.shiluying.wordbook.Word.WordContent.WordItem;
 import com.shiluying.wordbook.database.DBHelper;
-import com.shiluying.wordbook.database.SQLHelper;
+//import com.shiluying.wordbook.database.SQLHelper;
 import com.shiluying.wordbook.enity.Record;
 
 import java.util.ArrayList;
@@ -56,13 +58,32 @@ public class ListFragment extends Fragment {
     }
     public void RefreshData(){
         wordList=new ArrayList<WordItem>();
-        SQLiteDatabase db = new DBHelper(getActivity()).getWritableDatabase();
-        SQLHelper sqlHelper = new SQLHelper();
-        ArrayList<Record> recordList;
+//        SQLiteDatabase db = new DBHelper(getActivity()).getWritableDatabase();
+//        SQLHelper sqlHelper = new SQLHelper();
+        ArrayList<Record> recordList=new ArrayList<>();
+
+        MainActivity mainActivity=(MainActivity)getActivity();
+        Cursor cursor;
         if(!"".equals(mParam1)){
-            recordList=sqlHelper.fuzzyQuery(db,mParam1);
+            cursor = mainActivity.getContentResolver().query(
+                    DatabaseProvider.CONTENT_URI,DBHelper.TABLE_COLUMNS,"word LIKE ? ",new String[] { "%" + mParam1 + "%" },null);
+
+//            recordList=sqlHelper.fuzzyQuery(db,mParam1);
         }else{
-            recordList=sqlHelper.queryData(db,"");
+            cursor = mainActivity.getContentResolver().query(
+                    DatabaseProvider.CONTENT_URI,DBHelper.TABLE_COLUMNS,null,null,null);
+
+//            recordList=sqlHelper.queryData(db,"");
+        }
+        while (cursor != null && cursor.moveToNext()) {
+            Record record = new Record();
+            record.setWord(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD)));
+            record.setWordMeaning(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_MEANING)));
+            record.setWordphonetic(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_PHONETIC)));
+            record.setWordSample(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_SAMPLE)));
+            record.setWordtype(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_TYPE)));
+            recordList.add(record);
+            Log.i("QUERY", "queryData record = " + record.toString());
         }
         for(int i=0;i<recordList.size();i++){
             if("true".equals(recordList.get(i).getWordtype())){

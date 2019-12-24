@@ -9,33 +9,34 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_gravity="left|top">
+        android:layout_gravity="left|top"
+        android:scrollbars="vertical">
 
          <TextView
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/word"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
          <TextView
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/wordmeaning"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
          <TextView
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/wordphonetic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
          <TextView
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/wordsample"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
          <TextView
-            android:textSize="25sp"
+            android:textSize="20sp"
             android:id="@+id/wordtype"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

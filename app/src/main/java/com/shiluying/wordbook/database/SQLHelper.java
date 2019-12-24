@@ -89,7 +89,7 @@ public class SQLHelper {
         db.update(DBHelper.TABLE_NAME,values,"word=?", new String[]{word});
     }
     public ArrayList<Record> fuzzyQuery(SQLiteDatabase db,String str){
-        String selection = selection = "word";
+        String selection = "word";
         ArrayList<Record> recordList = new ArrayList<Record>();
         Cursor cursor;
         cursor = db.query(DBHelper.TABLE_NAME, DBHelper.TABLE_COLUMNS, selection+" LIKE ? ",

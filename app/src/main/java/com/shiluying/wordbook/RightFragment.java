@@ -1,8 +1,11 @@
 package com.shiluying.wordbook;
 
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.shiluying.wordbook.ContentProvider.DatabaseProvider;
 import com.shiluying.wordbook.database.DBHelper;
 import com.shiluying.wordbook.database.SQLHelper;
 import com.shiluying.wordbook.enity.Record;
@@ -83,7 +87,20 @@ public class RightFragment extends Fragment {
         return view;
     }
     public void refreshData(){
-        recordList=sqlHelper.queryData(db,mParam1);
+        MainActivity mainActivity=(MainActivity)getActivity();
+        Cursor cursor = mainActivity.getContentResolver().query(
+                DatabaseProvider.CONTENT_URI,DBHelper.TABLE_COLUMNS,null,null,null);
+        while (cursor != null && cursor.moveToNext()) {
+            Record record = new Record();
+            record.setWord(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD)));
+            record.setWordMeaning(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_MEANING)));
+            record.setWordphonetic(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_PHONETIC)));
+            record.setWordSample(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_SAMPLE)));
+            record.setWordtype(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_TYPE)));
+            recordList.add(record);
+            Log.i("QUERY", "queryData record = " + record.toString());
+        }
+//        recordList=sqlHelper.queryData(db,mParam1);
         textViewWord=(TextView)view.findViewById(R.id.word);
         TextView textViewMeaning=(TextView)view.findViewById(R.id.wordmeaning);
         TextView textViewPhonetic=(TextView)view.findViewById(R.id.wordphonetic);
@@ -126,7 +143,10 @@ public class RightFragment extends Fragment {
         delbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sqlHelper.deleteData(db,mParam1);
+                MainActivity mainActivity=(MainActivity)getActivity();
+                int num = mainActivity.getContentResolver().delete(
+                        DatabaseProvider.CONTENT_URI, "word=?",new String[]{mParam1+""});
+//                sqlHelper.deleteData(db,mParam1);
                 getFragmentManager().popBackStack();
             }
         });
@@ -146,11 +166,25 @@ public class RightFragment extends Fragment {
                 if("false".equals(type)){
                     typebutton.setText("REMOVE FROM LIST");
                     textViewType.setText("true");
-                    sqlHelper.updateDataType(db,word,"true");
+                    MainActivity mainActivity=(MainActivity)getActivity();
+                    ContentValues values;
+                    values = new ContentValues();
+                    values.put("wordtype", "true");
+                    int num = mainActivity.getContentResolver().update(
+                            DatabaseProvider.CONTENT_URI, values,"word=?", new String[]{word});
+//
+//                    sqlHelper.updateDataType(db,word,"true");
                 }else {
                     textViewType.setText("false");
                     typebutton.setText("ADD TO LIST");
-                    sqlHelper.updateDataType(db,word,"false");
+                    MainActivity mainActivity=(MainActivity)getActivity();
+                    ContentValues values;
+                    values = new ContentValues();
+                    values.put("word",word);
+                    values.put("wordtype","false");
+                    int num = mainActivity.getContentResolver().update(
+                            DatabaseProvider.CONTENT_URI, values,"word=?", new String[]{word});
+//                    sqlHelper.updateDataType(db,word,"false");
                 }
 
 //                refreshData();
@@ -160,7 +194,22 @@ public class RightFragment extends Fragment {
     public void changeWord(){
         final View layout = View.inflate(getActivity(), R.layout.word_add,
                 null);
-        ArrayList<Record> changeList=sqlHelper.queryData(db,mParam1);
+        ArrayList<Record> changeList=new ArrayList<>();
+        Activity mainActivity=getActivity();
+        Cursor cursor = mainActivity.getContentResolver().query(
+                DatabaseProvider.CONTENT_URI,DBHelper.TABLE_COLUMNS,null,null,null);
+        while (cursor != null && cursor.moveToNext()) {
+            Record record = new Record();
+            record.setWord(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD)));
+            record.setWordMeaning(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_MEANING)));
+            record.setWordphonetic(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_PHONETIC)));
+            record.setWordSample(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_SAMPLE)));
+            record.setWordtype(cursor.getString(cursor.getColumnIndex(DBHelper.RECORD_WORD_TYPE)));
+            changeList.add(record);
+            Log.i("QUERY", "queryData record = " + record.toString());
+        }
+//
+//        ArrayList<Record> changeList=sqlHelper.queryData(db,mParam1);
         if(changeList.size()==1){
             Record record=changeList.get(0);
             EditText edittext;
@@ -189,7 +238,16 @@ public class RightFragment extends Fragment {
                         String phonetic = edittext.getText().toString();
                         edittext = (EditText) layout.findViewById(R.id.addsample);
                         String sample = edittext.getText().toString();
-                        sqlHelper.updateData(db,word,meaning,phonetic,sample);
+                        MainActivity mainActivity=(MainActivity)getActivity();
+                        ContentValues values;
+                        values = new ContentValues();
+                        values.put("word",word);
+                        values.put("wordmeaning",meaning);;
+                        values.put("wordphonetic",phonetic);
+                        values.put("wordsample",sample);
+                        int num = mainActivity.getContentResolver().update(
+                                DatabaseProvider.CONTENT_URI, values,"word=?", new String[]{word});
+//                        sqlHelper.updateData(db,word,meaning,phonetic,sample);
                         refreshData();
                         Configuration configuration = getResources().getConfiguration();
                         if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {//横屏

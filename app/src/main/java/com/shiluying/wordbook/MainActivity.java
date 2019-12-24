@@ -1,6 +1,7 @@
 package com.shiluying.wordbook;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.shiluying.wordbook.ContentProvider.DatabaseProvider;
 import com.shiluying.wordbook.Server.TranslateServer;
 import com.shiluying.wordbook.Word.WordContent;
 
@@ -30,13 +32,12 @@ import com.shiluying.wordbook.database.*;
 import com.shiluying.wordbook.http.HttpUtilsSafe;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements LeftFragment.OnListFragmentInteractionListener,RightFragment.OnFragmentInteractionListener {
     private AlertDialog.Builder builder;
-    SQLiteDatabase db;
-    SQLHelper sqlHelper;
+//    SQLiteDatabase db;
+//    SQLHelper sqlHelper;
     private String fuzzyword="";
     private LeftFragment leftfragment;
     private RightFragment rightfragment;
@@ -53,8 +54,8 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        db=new DBHelper(this).getWritableDatabase();
-        sqlHelper  = new SQLHelper();
+//        db=new DBHelper(this).getWritableDatabase();
+//        sqlHelper  = new SQLHelper();
 
         fragmentManager = getSupportFragmentManager();//fragment管理器
         leftfragment=new LeftFragment();
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
         Intent intent;
         switch (item.getItemId()){
             case R.id.wordbook:
-                intent=new Intent(MainActivity.this,MainActivity.class);
+//                intent=new Intent(MainActivity.this,MainActivity.class);
                 break;
             case R.id.news:
                 intent=new Intent(MainActivity.this,NewsActivity.class);
@@ -130,14 +131,6 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
 
         }
         return true;
-//        int id = item.getItemId();
-//
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_settings) {
-//            return true;
-//        }
-//
-//        return super.onOptionsItemSelected(item);
     }
     @Override
     public void onResume(){
@@ -227,7 +220,16 @@ public class MainActivity extends AppCompatActivity implements LeftFragment.OnLi
                         }else{
                             Log.i("ADD","fail to add.");
                         }
-                        sqlHelper.insertData(db,word,wordphonetic,wordmeaning,wordsample,"false");
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put("word",word);
+                        contentValues.put("wordmeaning",wordmeaning);
+                        contentValues.put("wordphonetic",wordphonetic);
+                        contentValues.put("wordsample",wordsample);
+                        contentValues.put("wordtype","false");
+                        Uri uri = getContentResolver().insert(
+                                DatabaseProvider.CONTENT_URI, contentValues);
+
+//                        sqlHelper.insertData(db,word,wordphonetic,wordmeaning,wordsample,"false");
                         word="";
                         wordmeaning="";
                         wordsample="";
